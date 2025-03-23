@@ -5,3 +5,5 @@ It has undo, redo and clear canvas functionality.
 You can save the picture using save, if not, the drawing will be lost when closing or refreshing the website.
 You can also load an image into the canvas to continue drawing on it. 
 You can change the canvas background color too.
+
+Keyboard shortcuts: ctrl+z to undo, ctrl+r to redo, ctrl+c to clear
