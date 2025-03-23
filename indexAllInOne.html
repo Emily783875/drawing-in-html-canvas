@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>drawing in html canvas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256"></script>
+  <link rel="shortcut icon" href="favicon.ico" type="image/ico">
+  <style>
+        @import url('https://fonts.googleapis.com/css?family=Mukta');
+
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* This ensures the body takes up the full height of the viewport */
+            margin: 0; /* Removes default margin */
+            padding: 30px;
+            font-family: 'Mukta';
+            overflow:  auto; 
+            background: #2e2d3c;
+            accent-color: rgb(155, 213, 207);
+            font-style: rgb(155, 213, 207);
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column; /* Stack elements vertically (button, collapsible, canvas, tools) */
+            justify-content: flex-start; /* Start from the top */
+            align-items: center; /* Horizontally center everything */
+            height: 100vh;
+            margin: 0;
+            padding: 0; /* Remove any padding that might push the content off-screen */
+            box-sizing: border-box;
+        }
+
+
+        #canvas {
+            cursor: pointer;
+            border:2px solid black
+        }
+
+        .tools{
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            padding-top: 10px;
+            padding-bottom: 20px;
+        }
+
+        .button {
+            align-self: center;
+            margin: 0 5px;
+            margin-bottom: 5px;
+            background-color: rgb(155, 213, 207);
+            min-width: 20px;
+            min-height: 20px;
+            cursor: pointer;
+            display: inline-block;
+            box-sizing: border-box;
+            border-radius: 10%;
+            font: "Mukta";
+            font-weight: bold;
+        
+        }
+
+        .eraser {
+            align-self: center;
+            margin: 0 5px;
+            margin-bottom: 5px;
+            background-color: rgb(155, 213, 207);
+            min-width: 20px;
+            min-height: 20px;
+            cursor: pointer;
+            display: inline-block;
+            box-sizing: border-box;
+            border-radius: 10%;
+            font: "Mukta";
+            font-weight: bold;
+            transition: background-color 0.3s; /* Smooth transition */
+        }
+
+        .eraser.active {
+            background-color: rgb(100, 150, 150); /* Darker color when active */
+        }
+
+        .color_jitter_range{
+            align-self: center;
+            margin: 0 5px;
+            accent-color: rgb(155, 213, 207);
+        }
+
+        .color_jitter_value {
+            align-self: center;
+            margin: 0 5px;
+            background-color: rgb(155, 213, 207);
+            font: "Mukta";
+        }
+
+        .pen-range {
+            align-self: center;
+            margin: 0 5px;
+            accent-color: rgb(155, 213, 207);
+        }
+        .pen-size {
+            align-self: center;
+            margin: 0 5px;
+            background-color: rgb(155, 213, 207);
+            font: "Mukta";
+        }
+
+        .opac-size {
+            align-self: center;
+            margin: 0 5px;
+            background-color: rgb(155, 213, 207);
+            font: "Mukta";
+        }
+
+        input[type="color"] {
+            align-self: center;
+            margin: 0 5px;
+            border: none;
+            width: 30px;
+            height: 30px;
+            align-self: center;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+        }
+
+        .collapsible {
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .collapsible label,
+        .collapsible input {
+            margin: 5px; /* Adjust spacing for a neat layout */
+        }
+
+
+  </style>
+</head>
+
+<body>
+ 
+  <div class="field">
+    <h2  style="color: rgb(155, 213, 207); margin: 10px; font-family:monospace;">This is a simple web drawing application.</h4>
+    <div style="flex-direction: row;">
+      <!-- Toggle Button for Collapsible Menu -->
+      <button type="button" class="button" onclick="toggleCanvasMenu()">Canvas Options</button>
+      <!-- Toggle Button for Brush Menu -->
+      <button type="button" class="button" onclick="toggleBrushMenu()">Brush Options</button>
+  
+      <!-- Collapsible Container -->
+      <div id="canvasMenu" class="collapsible">
+        <span style="color: rgb(155, 213, 207);">Please note that applying will clear the canvas.</span>
+        <label for="canvasWidth" style="color: rgb(155, 213, 207);">Canvas Width:</label>
+        <input class="button" type="number" id="canvasWidth" min="100" max="5000" value="1000">
+        <label for="canvasHeight" style="color: rgb(155, 213, 207);">Canvas Height:</label>
+        <input class="button" type="number" id="canvasHeight" min="100" max="5000" value="600">
+        <button type="button" class="button" onclick="updateCanvasSize()">Apply</button>
+      </div>
+  
+      <!-- Collapsible Container for Brushes -->
+      <div id="brushMenu" class="collapsible">
+          <label for="brushType" style="color: rgb(155, 213, 207);">Select Brush:</label>
+          <select id="brushType" onchange="changeBrush(this.value)">
+              <option value="round">Round</option>
+              <option value="square">Square</option>
+              <option value="triangle">Triangle</option>
+          </select>
+      </div></div>
+    
+
+    <canvas id="canvas"></canvas>
+    <div class="tools">
+      <button type="button" class="button" onclick="undo_last()">Undo</button>
+      <button type="button" class="button" onclick="redo_last()">Redo</button>
+      <button type="button" class="button" onclick="clearCanvas()">Clear</button>
+      <button type="button" class="eraser" onclick="erase()">Eraser</button>
+      <button type="button" class="button" onclick="save()">Save</button>
+      
+      <input oninput="drawColor = this.value" type="color" class="color-picker">
+      <form>
+        <span style="color: rgb(155, 213, 207);">opacity</span>
+      <input type="range" class="opac-range" name="opacRange" id="opacRange" min="0.1" max="1" step="0.1" value="1" 
+          oninput="opacity = parseFloat(this.value); document.getElementById('opacInput').value=this.value;">
+      <input type="number" class="pen-size" name="opacInput" id="opacInput" min="0.1" max="1" step="0.1" value="1" 
+          oninput="opacity = parseFloat(this.value); document.getElementById('opacRange').value=this.value;">
+
+        <span style="color: rgb(155, 213, 207);">size</span>
+        <input type="range" class="pen-range" name="amountRange" id="amountRange" min="1" max="500" value="1" oninput="this.form.amountInput.value=this.value, drawWidth = this.value">
+        <input type="number" class="pen-size" name="amountInput" id="amountInput" min="1" max="500" value="1" oninput="this.form.amountRange.value=this.value, drawWidth = this.value"> 
+        <span style="color: rgb(155, 213, 207);">colorjitter</span>
+        <input type="range" class="color_jitter_range" name="color_jitter_range" id="color_jitter_range" 
+          min="0" max="100" value="1" oninput="this.form.color_jitter_value.value=this.value; colorjitter = parseInt(this.value)">
+        <input type="number" class="color_jitter_value" name="color_jitter_value" id="color_jitter_value" 
+          min="0" max="100" value="1" oninput="this.form.color_jitter_range.value=this.value; colorjitter = parseInt(this.value)">
+
+      </form>
+
+    </div>
+  </div>
+  
+  
+  
+  <script>
+    const canvas = document.getElementById("canvas");
+        canvas.width = 1000;
+        canvas.height = 600;
+
+        let context = canvas.getContext("2d");
+        context.fillStyle = "gray";
+        context.fillRect(0,0, canvas.width, canvas.height);
+
+        let startBGColor = "grey";
+        let drawColor = "black";
+        let drawWidth = "2";
+        let currentBrush = "round"; // Default brush type
+        let currentJoin = "round"; // Default brush type
+        let isDrawing = false;
+        let isErasing = false;
+        let previousColor = drawColor;
+        let colorjitter = 0;
+        let opacity = 1;
+
+        let lastX;
+        let lastY;
+
+        let undo_array = [];
+        let redo_array = [];
+        let undo_index = -1;
+        let redo_index = -1;
+
+
+        canvas.addEventListener("touchstart", start,  false);
+        canvas.addEventListener("touchmove", draw, false);
+        canvas.addEventListener("mousedown", start,  false);
+        canvas.addEventListener("mousemove", draw, false);
+
+        canvas.addEventListener("touchend", stop, false);
+        canvas.addEventListener("mouseup", stop, false);
+        canvas.addEventListener("mouseout", stop, false);
+
+        function start(event) {
+            isDrawing = true;
+            context.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            context.moveTo(event.clientX - rect.left, event.clientY - rect.top);
+            event.preventDefault();
+
+            // Apply color jitter if not erasing
+            if (!isErasing) {
+                let jitteredColor = addColorJitter(drawColor, colorjitter);
+                context.strokeStyle = jitteredColor;
+            } else {
+                context.strokeStyle = drawColor; // Use background color for erasing
+            }
+            context.globalAlpha = opacity; 
+        }
+
+
+        function draw(event) {
+            if (isDrawing) {
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left; // Get the x coordinate
+                const y = event.clientY - rect.top;  // Get the y coordinate
+
+                context.lineWidth = drawWidth;
+                context.lineJoin = currentJoin;
+                context.lineCap = currentBrush;
+                context.globalAlpha = opacity; 
+
+                // Draw based on the selected brush type
+                if (currentBrush === "round") {
+                    context.lineTo(x, y);
+                    context.stroke();
+                } else if (currentBrush === "square") {
+                    drawSquareBrush(x, y); // Call the square brush function
+                } else if (currentBrush === "triangle") {
+                    drawTriangleBrush(x, y); // Call the triangle brush function
+                }
+
+                lastX = x; // Update lastX
+                lastY = y; // Update lastY
+            }
+            event.preventDefault();
+        }
+
+
+        function stop(event){
+            if(isDrawing){
+                context.stroke();
+                context.closePath();
+                isDrawing = false;
+            }
+            event.preventDefault();
+
+            if(event.type !='mouseout'){
+                undo_array.push(context.getImageData(0,0, canvas.width, canvas.height));
+                undo_index +=1;
+            }
+        
+        }
+
+        function erase() {
+            if (isErasing) {
+                // If already in eraser mode, switch back to the previous color
+                isErasing = false;
+                drawColor = previousColor; // Restore the previous drawing color
+
+                // Remove active class from the eraser button
+                document.querySelector('.eraser').classList.remove('active');
+            } else {
+                // If not in eraser mode, switch to eraser mode
+                previousColor = drawColor; // Store the current drawing color
+                isErasing = true;
+                drawColor = startBGColor; // Set the draw color to the background color
+
+                // Add active class to the eraser button
+                document.querySelector('.eraser').classList.add('active');
+            }
+        }
+
+        function switchToDrawing() {
+            isErasing = false; // Switch back to drawing mode
+            drawColor = "black"; // Reset to default drawing color
+
+            // Remove active class from the eraser button
+            document.querySelector('.eraser').classList.remove('active');
+        }
+
+        function clearCanvas(){
+            context.fillStyle = startBGColor;
+            context.clearRect(0,0, canvas.width , canvas.height);
+            context.fillRect(0,0, canvas.width , canvas.height);
+            undo_array = [];
+            undo_index = -1;
+        }
+
+        function undo_last(){
+            if(undo_index <= 0){
+                clearCanvas();
+            } else {
+                redo_array.push(undo_array[undo_index]); // Store the undone state
+                redo_index += 1;
+                undo_index -= 1;
+                undo_array.pop();
+                context.putImageData(undo_array[undo_index],0 , 0);
+            }
+        }
+
+        function redo_last(){
+            if(redo_index >= 0){
+                context.putImageData(redo_array[redo_index], 0, 0);
+                undo_array.push(redo_array[redo_index]); // Restore to undo_array
+                undo_index += 1;
+                redo_array.pop();
+                redo_index -= 1;
+            }
+            
+        }
+
+        document.addEventListener("keydown", function(event) {
+            if (event.ctrlKey && event.key === "z") {
+                undo_last();
+                event.preventDefault(); // Prevent default behavior
+            }
+
+            if (event.ctrlKey && event.key === "r") {
+                redo_last();
+                event.preventDefault(); // Prevent default behavior
+            }
+
+            if (event.ctrlKey && event.key === "c") {
+                clearCanvas();
+                event.preventDefault(); // Prevent default behavior
+            }
+        });
+
+
+        function addColorJitter(color, jitterAmount) {
+            // Extract RGB values from the color string (e.g., "rgb(0,0,0)" or hex values)
+            let rgbMatch = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+            if (!rgbMatch) return color; // Return the original color if it's not in hex format
+
+            let r = parseInt(rgbMatch[1], 16);
+            let g = parseInt(rgbMatch[2], 16);
+            let b = parseInt(rgbMatch[3], 16);
+
+            // Add jitter to each component and clamp the values between 0 and 255
+            r = Math.min(255, Math.max(0, r + Math.floor((Math.random() * 2 - 1) * jitterAmount*2)));
+            g = Math.min(255, Math.max(0, g + Math.floor((Math.random() * 2 - 1) * jitterAmount*2)));
+            b = Math.min(255, Math.max(0, b + Math.floor((Math.random() * 2 - 1) * jitterAmount*2)));
+
+            // Return the new jittered color as a hex string
+            return `rgb(${r},${g},${b})`;
+        }
+
+        function save(){
+            // Convert canvas content to a data URL (Base64 encoded PNG)
+            const dataURL = canvas.toDataURL("image/png");
+
+            // Create a temporary <a> element
+            const link = document.createElement("a");
+            link.href = dataURL;
+        
+            // Set the download attribute with a default filename
+            link.download = "canvas-image.png";
+        
+            // Trigger the download by programmatically clicking the link
+            link.click();
+        }
+
+        function updateCanvasSize() {
+            // Get the width and height values from the input fields
+            const newWidth = parseInt(document.getElementById("canvasWidth").value);
+            const newHeight = parseInt(document.getElementById("canvasHeight").value);
+
+            // Update canvas dimensions
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+
+            // Redraw the canvas background
+            context.fillStyle = startBGColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Clear undo/redo arrays as the canvas has been reset
+            undo_array = [];
+            redo_array = [];
+            undo_index = -1;
+            redo_index = -1;
+        }
+
+        function toggleCanvasMenu() {
+            const menu = document.getElementById("canvasMenu");
+            if (menu.style.display === "none" || menu.style.display === "") {
+                menu.style.display = "flex"; // Show the menu
+            } else {
+                menu.style.display = "none"; // Hide the menu
+            }
+        }
+
+        document.getElementById("opacRange").addEventListener("input", (event) => {
+            opacity = parseFloat(event.target.value); // Update opacity dynamically
+        });
+
+        document.getElementById("opacInput").addEventListener("input", (event) => {
+            opacity = parseFloat(event.target.value); // Update opacity from number input
+        });
+
+        function toggleBrushMenu() {
+            const menu = document.getElementById("brushMenu");
+            if (menu.style.display === "none" || menu.style.display === "") {
+                menu.style.display = "flex"; // Show the menu
+            } else {
+                menu.style.display = "none"; // Hide the menu
+            }
+        }
+
+        function changeBrush(brushType) {
+            switch (brushType) {
+                case "round":
+                    currentBrush = "round";
+                    currentJoin = "round";
+                    context.lineCap = "round";
+                    ctx.lineJoin='round';
+                    break;
+                case "square":
+                    currentBrush = "butt";
+                    currentJoin = "bevel";
+                    context.lineCap = "butt"; // Square ends
+                    ctx.lineJoin='bevel';
+                    break;
+                case "triangle":
+                    currentBrush = "square";
+                    currentJoin = "miter";
+                    context.lineCap = "square"; // Triangle effect can be simulated with square
+                    ctx.lineJoin='miter';
+                    break;
+                default:
+                    context.lineCap = "round"; // Default to round
+            }
+        }
+
+        function drawSquareBrush(x, y) {
+            // Apply color jitter
+            let jitteredColor = addColorJitter(drawColor, colorjitter);
+            context.fillStyle = jitteredColor; // Use the jittered color
+            context.fillRect(x - drawWidth / 2, y - drawWidth / 2, drawWidth, drawWidth);
+        }
+
+        function drawTriangleBrush(x, y) {
+            let jitteredColor = addColorJitter(drawColor, colorjitter);
+            context.fillStyle = jitteredColor; // Use the jittered color
+            context.beginPath();
+            context.moveTo(x, y - drawWidth / 2); // Top point of the triangle
+            context.lineTo(x - drawWidth / 2, y + drawWidth / 2); // Bottom left point
+            context.lineTo(x + drawWidth / 2, y + drawWidth / 2); // Bottom right point
+            context.closePath();
+            context.fill();
+        }
+
+
+        function changeBrush(brushType) {
+            currentBrush = brushType; // Update the current brush type
+        }
+
+
+
+  </script>
+  
+</body>
+
+</html>

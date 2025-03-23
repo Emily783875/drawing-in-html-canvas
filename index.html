@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>drawing in html canvas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256"></script>
+  <link rel="stylesheet" href="style.css" type="text/css">
+  <link rel="shortcut icon" href="favicon.ico" type="image/ico">
+</head>
+
+<body>
+ 
+  <div class="field">
+    <h2  style="color: rgb(155, 213, 207); margin: 10px; font-family:monospace;">This is a simple web drawing application.</h4>
+    <div style="flex-direction: row;">
+      <!-- Toggle Button for Collapsible Menu -->
+      <button type="button" class="button" onclick="toggleCanvasMenu()">Canvas Options</button>
+      <!-- Toggle Button for Brush Menu -->
+      <button type="button" class="button" onclick="toggleBrushMenu()">Brush Options</button>
+  
+      <!-- Collapsible Container -->
+      <div id="canvasMenu" class="collapsible">
+        <span style="color: rgb(155, 213, 207);">Please note that applying will clear the canvas.</span>
+        <label for="canvasWidth" style="color: rgb(155, 213, 207);">Canvas Width:</label>
+        <input class="button" type="number" id="canvasWidth" min="100" max="5000" value="1000">
+        <label for="canvasHeight" style="color: rgb(155, 213, 207);">Canvas Height:</label>
+        <input class="button" type="number" id="canvasHeight" min="100" max="5000" value="600">
+        <button type="button" class="button" onclick="updateCanvasSize()">Apply</button>
+      </div>
+  
+      <!-- Collapsible Container for Brushes -->
+      <div id="brushMenu" class="collapsible">
+          <label for="brushType" style="color: rgb(155, 213, 207);">Select Brush:</label>
+          <select id="brushType" onchange="changeBrush(this.value)">
+              <option value="round">Round</option>
+              <option value="square">Square</option>
+              <option value="triangle">Triangle</option>
+          </select>
+      </div></div>
+    
+
+    <canvas id="canvas"></canvas>
+    <div class="tools">
+      <button type="button" class="button" onclick="undo_last()">Undo</button>
+      <button type="button" class="button" onclick="redo_last()">Redo</button>
+      <button type="button" class="button" onclick="clearCanvas()">Clear</button>
+      <button type="button" class="eraser" onclick="erase()">Eraser</button>
+      <button type="button" class="button" onclick="save()">Save</button>
+      
+      <input oninput="drawColor = this.value" type="color" class="color-picker">
+      <form>
+        <span style="color: rgb(155, 213, 207);">opacity</span>
+      <input type="range" class="opac-range" name="opacRange" id="opacRange" min="0.1" max="1" step="0.1" value="1" 
+          oninput="opacity = parseFloat(this.value); document.getElementById('opacInput').value=this.value;">
+      <input type="number" class="pen-size" name="opacInput" id="opacInput" min="0.1" max="1" step="0.1" value="1" 
+          oninput="opacity = parseFloat(this.value); document.getElementById('opacRange').value=this.value;">
+
+        <span style="color: rgb(155, 213, 207);">size</span>
+        <input type="range" class="pen-range" name="amountRange" id="amountRange" min="1" max="500" value="1" oninput="this.form.amountInput.value=this.value, drawWidth = this.value">
+        <input type="number" class="pen-size" name="amountInput" id="amountInput" min="1" max="500" value="1" oninput="this.form.amountRange.value=this.value, drawWidth = this.value"> 
+        <span style="color: rgb(155, 213, 207);">colorjitter</span>
+        <input type="range" class="color_jitter_range" name="color_jitter_range" id="color_jitter_range" 
+          min="0" max="100" value="1" oninput="this.form.color_jitter_value.value=this.value; colorjitter = parseInt(this.value)">
+        <input type="number" class="color_jitter_value" name="color_jitter_value" id="color_jitter_value" 
+          min="0" max="100" value="1" oninput="this.form.color_jitter_range.value=this.value; colorjitter = parseInt(this.value)">
+
+      </form>
+
+    </div>
+  </div>
+  
+  
+  
+  <script src="index.js"></script>
+  
+</body>
+
+</html>

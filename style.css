@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css?family=Mukta');
+
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* This ensures the body takes up the full height of the viewport */
+    margin: 0; /* Removes default margin */
+    padding: 30px;
+    font-family: 'Mukta';
+    overflow:  auto; 
+    background: #2e2d3c;
+    accent-color: rgb(155, 213, 207);
+    font-style: rgb(155, 213, 207);
+}
+
+.field {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically (button, collapsible, canvas, tools) */
+    justify-content: flex-start; /* Start from the top */
+    align-items: center; /* Horizontally center everything */
+    height: 100vh;
+    margin: 0;
+    padding: 0; /* Remove any padding that might push the content off-screen */
+    box-sizing: border-box;
+}
+
+
+#canvas {
+    cursor: pointer;
+    border:2px solid black
+}
+
+.tools{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 30px;
+    padding-top: 10px;
+    padding-bottom: 20px;
+}
+
+.button {
+    align-self: center;
+    margin: 0 5px;
+    margin-bottom: 5px;
+    background-color: rgb(155, 213, 207);
+    min-width: 20px;
+    min-height: 20px;
+    cursor: pointer;
+    display: inline-block;
+    box-sizing: border-box;
+    border-radius: 10%;
+    font: "Mukta";
+    font-weight: bold;
+   
+}
+
+.eraser {
+    align-self: center;
+    margin: 0 5px;
+    margin-bottom: 5px;
+    background-color: rgb(155, 213, 207);
+    min-width: 20px;
+    min-height: 20px;
+    cursor: pointer;
+    display: inline-block;
+    box-sizing: border-box;
+    border-radius: 10%;
+    font: "Mukta";
+    font-weight: bold;
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+.eraser.active {
+    background-color: rgb(100, 150, 150); /* Darker color when active */
+}
+
+.color_jitter_range{
+    align-self: center;
+    margin: 0 5px;
+    accent-color: rgb(155, 213, 207);
+}
+
+.color_jitter_value {
+    align-self: center;
+    margin: 0 5px;
+    background-color: rgb(155, 213, 207);
+    font: "Mukta";
+}
+
+.pen-range {
+    align-self: center;
+    margin: 0 5px;
+    accent-color: rgb(155, 213, 207);
+}
+.pen-size {
+    align-self: center;
+    margin: 0 5px;
+    background-color: rgb(155, 213, 207);
+    font: "Mukta";
+}
+
+.opac-size {
+    align-self: center;
+    margin: 0 5px;
+    background-color: rgb(155, 213, 207);
+    font: "Mukta";
+}
+
+input[type="color"] {
+    align-self: center;
+    margin: 0 5px;
+    border: none;
+    width: 30px;
+    height: 30px;
+    align-self: center;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+}
+
+.collapsible {
+    display: none; /* Initially hidden */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.collapsible label,
+.collapsible input {
+    margin: 5px; /* Adjust spacing for a neat layout */
+}
+
