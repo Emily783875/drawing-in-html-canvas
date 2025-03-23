@@ -163,15 +163,18 @@
       <button type="button" class="button" onclick="toggleCanvasMenu()">Canvas Options</button>
       <!-- Toggle Button for Brush Menu -->
       <button type="button" class="button" onclick="toggleBrushMenu()">Brush Options</button>
+      <input type="file" id="imageLoader" accept="image/png" onchange="loadImage(event)" class="button">
   
       <!-- Collapsible Container -->
       <div id="canvasMenu" class="collapsible">
-        <span style="color: rgb(155, 213, 207);">Please note that applying will clear the canvas.</span>
+        <span style="color: rgb(155, 213, 207);">Please note that applying the size will clear the canvas.</span>
         <label for="canvasWidth" style="color: rgb(155, 213, 207);">Canvas Width:</label>
         <input class="button" type="number" id="canvasWidth" min="100" max="5000" value="1000">
         <label for="canvasHeight" style="color: rgb(155, 213, 207);">Canvas Height:</label>
         <input class="button" type="number" id="canvasHeight" min="100" max="5000" value="600">
-        <button type="button" class="button" onclick="updateCanvasSize()">Apply</button>
+        <button type="button" class="button" onclick="updateCanvasSize()">Apply size</button>
+        <label for="bgColor" style="color: rgb(155, 213, 207);">Background Color:</label>
+        <input type="color" id="bgColor" value="#808080" onchange="changeBackgroundColor(this.value)" class="button">
       </div>
   
       <!-- Collapsible Container for Brushes -->
@@ -255,11 +258,31 @@
         canvas.addEventListener("mouseup", stop, false);
         canvas.addEventListener("mouseout", stop, false);
 
+
+        function getCoordinates(event) {
+            const rect = canvas.getBoundingClientRect();
+            let x, y;
+
+            if (event.touches) {
+                // Handle touch events
+                const touch = event.touches[0];
+                x = touch.clientX - rect.left;
+                y = touch.clientY - rect.top;
+            } else {
+                // Handle mouse events
+                x = event.clientX - rect.left;
+                y = event.clientY - rect.top;
+            }
+
+            return { x, y };
+        }
+
+
         function start(event) {
             isDrawing = true;
             context.beginPath();
-            const rect = canvas.getBoundingClientRect();
-            context.moveTo(event.clientX - rect.left, event.clientY - rect.top);
+            const { x, y } = getCoordinates(event);
+            context.moveTo(x, y);
             event.preventDefault();
 
             // Apply color jitter if not erasing
@@ -272,12 +295,9 @@
             context.globalAlpha = opacity; 
         }
 
-
         function draw(event) {
             if (isDrawing) {
-                const rect = canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left; // Get the x coordinate
-                const y = event.clientY - rect.top;  // Get the y coordinate
+                const { x, y } = getCoordinates(event);
 
                 context.lineWidth = drawWidth;
                 context.lineJoin = currentJoin;
@@ -300,20 +320,18 @@
             event.preventDefault();
         }
 
-
-        function stop(event){
-            if(isDrawing){
+        function stop(event) {
+            if (isDrawing) {
                 context.stroke();
                 context.closePath();
                 isDrawing = false;
             }
             event.preventDefault();
 
-            if(event.type !='mouseout'){
-                undo_array.push(context.getImageData(0,0, canvas.width, canvas.height));
-                undo_index +=1;
+            if (event.type !== 'mouseout') {
+                undo_array.push(context.getImageData(0, 0, canvas.width, canvas.height));
+                undo_index += 1;
             }
-        
         }
 
         function erase() {
@@ -343,10 +361,10 @@
             document.querySelector('.eraser').classList.remove('active');
         }
 
-        function clearCanvas(){
-            context.fillStyle = startBGColor;
-            context.clearRect(0,0, canvas.width , canvas.height);
-            context.fillRect(0,0, canvas.width , canvas.height);
+        function clearCanvas() {
+            context.fillStyle = startBGColor; // Use the current background color
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.fillRect(0, 0, canvas.width, canvas.height); // Fill with the background color
             undo_array = [];
             undo_index = -1;
         }
@@ -519,9 +537,38 @@
             currentBrush = brushType; // Update the current brush type
         }
 
+        function loadImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // Set the canvas size to the image size
+                        canvas.width = img.width;
+                        canvas.height = img.height;
 
+                        // Clear the canvas before drawing the image
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.fillStyle = startBGColor; // Fill with background color
+                        context.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Draw the image on the canvas
+                        context.drawImage(img, 0, 0);
+                    }
+                    img.src = e.target.result; // Set the image source to the loaded file
+                }
+                reader.readAsDataURL(file); // Read the file as a data URL
+            }
+        }
 
-  </script>
+        function changeBackgroundColor(color) {
+            startBGColor = color; // Update the background color variable
+            context.fillStyle = startBGColor; // Set the fill style to the new background color
+            context.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the new background color
+        }
+
+    </script>
   
 </body>
 

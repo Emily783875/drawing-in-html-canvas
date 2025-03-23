@@ -138,10 +138,10 @@ function switchToDrawing() {
     document.querySelector('.eraser').classList.remove('active');
 }
 
-function clearCanvas(){
-    context.fillStyle = startBGColor;
-    context.clearRect(0,0, canvas.width , canvas.height);
-    context.fillRect(0,0, canvas.width , canvas.height);
+function clearCanvas() {
+    context.fillStyle = startBGColor; // Use the current background color
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillRect(0, 0, canvas.width, canvas.height); // Fill with the background color
     undo_array = [];
     undo_index = -1;
 }
@@ -314,4 +314,33 @@ function changeBrush(brushType) {
     currentBrush = brushType; // Update the current brush type
 }
 
+function loadImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                // Set the canvas size to the image size
+                canvas.width = img.width;
+                canvas.height = img.height;
 
+                // Clear the canvas before drawing the image
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.fillStyle = startBGColor; // Fill with background color
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw the image on the canvas
+                context.drawImage(img, 0, 0);
+            }
+            img.src = e.target.result; // Set the image source to the loaded file
+        }
+        reader.readAsDataURL(file); // Read the file as a data URL
+    }
+}
+
+function changeBackgroundColor(color) {
+    startBGColor = color; // Update the background color variable
+    context.fillStyle = startBGColor; // Set the fill style to the new background color
+    context.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the new background color
+}

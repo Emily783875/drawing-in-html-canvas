@@ -19,15 +19,18 @@
       <button type="button" class="button" onclick="toggleCanvasMenu()">Canvas Options</button>
       <!-- Toggle Button for Brush Menu -->
       <button type="button" class="button" onclick="toggleBrushMenu()">Brush Options</button>
+      <input type="file" id="imageLoader" accept="image/png" onchange="loadImage(event)" class="button">
   
       <!-- Collapsible Container -->
       <div id="canvasMenu" class="collapsible">
-        <span style="color: rgb(155, 213, 207);">Please note that applying will clear the canvas.</span>
+        <span style="color: rgb(155, 213, 207);">Please note that applying the size will clear the canvas.</span>
         <label for="canvasWidth" style="color: rgb(155, 213, 207);">Canvas Width:</label>
         <input class="button" type="number" id="canvasWidth" min="100" max="5000" value="1000">
         <label for="canvasHeight" style="color: rgb(155, 213, 207);">Canvas Height:</label>
         <input class="button" type="number" id="canvasHeight" min="100" max="5000" value="600">
-        <button type="button" class="button" onclick="updateCanvasSize()">Apply</button>
+        <button type="button" class="button" onclick="updateCanvasSize()">Apply size</button>
+        <label for="bgColor" style="color: rgb(155, 213, 207);">Background Color:</label>
+        <input type="color" id="bgColor" value="#808080" onchange="changeBackgroundColor(this.value)" class="button">
       </div>
   
       <!-- Collapsible Container for Brushes -->
